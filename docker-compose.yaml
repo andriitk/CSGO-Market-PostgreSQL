@@ -1,0 +1,39 @@
+# docker-compose up --build
+version: '3.10'
+
+services:
+  postgres_db:
+    image: postgres:15
+    container_name: csgo_postgres_db
+    command: -p 1224
+    expose:
+      - 1224
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  redis:
+    image: redis
+    container_name: csgo_redis_db
+    command: --port 6398
+    expose:
+      - 6398
+    env_file:
+      - .env
+
+  app:
+    platform: linux/amd64
+    build:
+      context: .
+    container_name: csgo_app
+    command: bash -c "alembic upgrade head && cd src && python3 main.py"
+    env_file:
+      - .env
+    depends_on:
+      - postgres_db
+      - redis
+
+
+volumes:
+  postgres_data:
